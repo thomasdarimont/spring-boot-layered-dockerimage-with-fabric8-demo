@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.0.M2</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.github.thomasdarimont.training</groupId>
+    <artifactId>spring-boot-layered-dockerimage-with-fabric8-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>spring-boot-layered-dockerimage-with-fabric8-demo</name>
+    <description>Demo project for Spring Boot</description>
+
+    <properties>
+        <java.version>11</java.version>
+        <docker-maven-plugin.version>0.33.0</docker-maven-plugin.version>
+        <docker-verbose>false</docker-verbose>
+        <docker-image>thomasdarimont/training/spring-boot-layered-dockerimage-with-fabric8-demo</docker-image>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <layout>LAYERED_JAR</layout>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>${git-commit-id-plugin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>git-commit-id-on-validate-revision</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <skipPoms>false</skipPoms>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <!-- enables other plugins to use git properties -->
+                    <injectAllReactorProjects>true</injectAllReactorProjects>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>${docker-maven-plugin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>docker-build-100</id>
+                        <phase>docker</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <verbose>${docker-verbose}</verbose>
+
+                    <images>
+                        <image>
+                            <name>${docker-image}</name>
+                            <build>
+                                <args>
+                                    <APP_NAME>${project.name}</APP_NAME>
+                                    <APP_VERSION>${project.version}</APP_VERSION>
+                                    <VENDOR_NAME>${project.organization.name}</VENDOR_NAME>
+                                    <VENDOR_URL>${project.organization.url}</VENDOR_URL>
+                                    <DESCRIPTION>${project.description}</DESCRIPTION>
+                                    <BUILD_DATE>${git.build.time}</BUILD_DATE>
+                                    <BUILD_HOST>${git.build.host}</BUILD_HOST>
+                                    <VCS_REF>${git.commit.id.abbrev}</VCS_REF>
+                                </args>
+
+                                <tags>
+                                    <tag>${project.version}</tag>
+                                    <!--tag>${git.commit.id}</tag-->
+                                </tags>
+
+                                <dockerFileDir>app</dockerFileDir>
+                                <assembly>
+                                    <inline>
+                                        <files>
+                                            <file>
+                                                <source>
+                                                    ${project.build.directory}/${project.build.finalName}.${project.packaging}
+                                                </source>
+                                            </file>
+                                        </files>
+                                    </inline>
+                                </assembly>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
