@@ -21,6 +21,6 @@ class HelloController {
 
     @GetMapping("/")
     Object hello() {
-        return Map.of("Hello", Instant.now());
+        return Map.of("Hi", Instant.now());
     }
 }
